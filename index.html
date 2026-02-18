@@ -111,9 +111,17 @@
 
 <script>
     function showView(id) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const targetView = document.getElementById(id);
+    targetView.classList.add('active');
+    
+    // If we are opening the chat, automatically focus the input bar
+    if(id === 'v-chat') {
+        setTimeout(() => {
+            document.getElementById('msg-input').focus();
+        }, 300); // Small delay to wait for the screen to slide in
     }
+}
 
     function startChat(msg) {
         showView('v-chat');
@@ -177,4 +185,5 @@
     }
 </script></body>
 </html>
+
 
