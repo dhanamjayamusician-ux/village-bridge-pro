@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
 
 exports.handler = async (event) => {
     try {
