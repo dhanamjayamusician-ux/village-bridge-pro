@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Village Connect</title>
+    <title>Village Connect | Helper</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
 
     <style>
@@ -12,45 +12,42 @@
             --white: #FFFFFF;
             --blue: #007AFF;
             --green: #34C759;
-            --yellow: #FFCC00;
             --gray: #8E8E93;
+            --shadow: 0 10px 30px rgba(0,0,0,0.08);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
         body { font-family: 'Montserrat', sans-serif; background: var(--bg); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-        #app { width: 100%; max-width: 450px; background: var(--bg); display: flex; flex-direction: column; position: relative; }
+        #app { width: 100%; max-width: 450px; background: var(--bg); display: flex; flex-direction: column; position: relative; box-shadow: 0 20px 80px rgba(0,0,0,0.1); }
 
         .view { display: none; flex-direction: column; height: 100%; overflow-y: auto; }
         .view.active { display: flex; }
 
-        /* TRAFFIC LIGHT STATUS */
-        .status-box { 
-            background: var(--white); 
-            margin: 20px; padding: 20px; 
-            border-radius: 25px; 
-            display: flex; align-items: center; gap: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        }
-        .light { width: 50px; height: 50px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-        .status-info h3 { font-size: 1.1rem; }
-        .status-info p { font-size: 0.85rem; color: var(--gray); }
+        /* DASHBOARD */
+        .header { padding: 60px 24px 20px; }
+        h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; }
 
-        /* CHAT AREA */
+        .status-box { background: var(--white); margin: 20px 24px; padding: 25px; border-radius: 30px; display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow); }
+        .status-light { width: 45px; height: 45px; border-radius: 50%; background: rgba(52, 199, 89, 0.1); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .status-info h3 { font-size: 1.1rem; color: var(--green); }
+
+        /* ACTION BUTTONS */
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 24px; }
+        .quick-btn { background: var(--white); padding: 25px 15px; border-radius: 25px; border: none; box-shadow: var(--shadow); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.2s; }
+        .quick-btn:active { transform: scale(0.95); }
+        .call-btn { background: var(--blue); color: white; margin: 20px 24px; padding: 20px; border-radius: 20px; text-align: center; font-weight: 700; text-decoration: none; display: block; }
+
+        /* CHAT */
+        .nav-bar { padding: 55px 24px 15px; background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid #ddd; display: flex; align-items: center; }
         #chat-flow { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: white; }
-        .msg { max-width: 85%; padding: 14px 18px; border-radius: 22px; font-size: 1rem; line-height: 1.4; }
-        .msg.bot { background: #F2F2F7; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg { max-width: 80%; padding: 14px 18px; border-radius: 22px; font-size: 1rem; line-height: 1.4; }
+        .msg.bot { background: #E9E9EB; align-self: flex-start; border-bottom-left-radius: 4px; }
         .msg.user { background: var(--blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
 
-        /* INPUT BAR WITH VOICE */
-        .input-bar { padding: 15px 20px 40px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; align-items: center; }
-        #msg-input { flex: 1; padding: 12px 20px; border-radius: 30px; border: 1px solid #ddd; outline: none; background: #f9f9f9; font-size: 1rem; }
+        .input-bar { padding: 15px 20px 40px; background: white; border-top: 1px solid #ddd; display: flex; gap: 10px; align-items: center; }
+        #msg-input { flex: 1; padding: 14px 20px; border-radius: 30px; border: 1px solid #ddd; outline: none; background: #f9f9f9; font-size: 1rem; }
         
-        .icon-btn { 
-            background: var(--bg); border: none; width: 45px; height: 45px; 
-            border-radius: 50%; cursor: pointer; font-size: 1.2rem;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .voice-btn { color: var(--blue); }
+        .icon-btn { background: #f0f0f0; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
         .voice-btn.recording { background: #FF3B30; color: white; animation: pulse 1.5s infinite; }
         .send-btn { background: var(--blue); color: white; }
 
@@ -61,35 +58,52 @@
 
 <div id="app">
     <div id="v-home" class="view active">
-        <div style="padding: 50px 20px 10px;">
-            <h1 style="font-family: 'Playfair Display'; font-size: 2.5rem;">Hello!</h1>
+        <div class="header">
+            <p style="color:var(--gray); font-weight:700; font-size:0.75rem; letter-spacing:1px; text-transform:uppercase;">Village Helper</p>
+            <h1>Namaste!</h1>
         </div>
 
         <div class="status-box">
-            <div class="light" id="main-light">✅</div>
+            <div class="status-light">✅</div>
             <div class="status-info">
-                <h3 id="status-title">Internet is Good</h3>
-                <p id="status-desc">You can browse and watch videos.</p>
+                <h3>Signal is Good</h3>
+                <p style="color:var(--gray); font-size:0.85rem;">You are connected.</p>
             </div>
         </div>
 
-        <button style="margin: 20px; padding: 25px; border-radius: 25px; border: none; background: var(--blue); color: white; font-weight: 700; font-size: 1.1rem; cursor: pointer;" onclick="showView('v-chat')">
-            💬 Talk to Help Center
-        </button>
+        <div class="btn-grid">
+            <button class="quick-btn" onclick="startChat('Internet is slow')">
+                <span style="font-size:1.8rem;">🐢</span>
+                <span style="font-weight:700;">Slow Net</span>
+            </button>
+            <button class="quick-btn" onclick="startChat('No signal here')">
+                <span style="font-size:1.8rem;">❌</span>
+                <span style="font-weight:700;">No Signal</span>
+            </button>
+        </div>
+
+        <a href="tel:12345678" class="call-btn">📞 Call Help Center</a>
+
+        <div style="padding: 0 24px;">
+            <button class="quick-btn" style="width:100%; flex-direction:row; justify-content:center;" onclick="showView('v-chat')">
+                <span>💬</span> <span style="font-weight:700; margin-left:10px;">Chat with Helper</span>
+            </button>
+        </div>
     </div>
 
     <div id="v-chat" class="view">
-        <div style="padding: 50px 20px 15px; border-bottom: 1px solid #eee; background: white;">
-            <button onclick="showView('v-home')" style="background:none; border:none; color:var(--blue); font-weight:700; cursor:pointer;">‹ Back</button>
+        <div class="nav-bar">
+            <button onclick="showView('v-home')" style="background:none; border:none; color:var(--blue); font-weight:700; cursor:pointer; font-size:1rem;">‹ Back</button>
+            <span style="flex:1; text-align:center; font-weight:700;">Helper Chat</span>
         </div>
 
         <div id="chat-flow">
-            <div class="msg bot">Hello! I am your helper. You can type or press the Microphone to speak to me.</div>
+            <div class="msg bot">Hello! You can talk to me or press the microphone to speak. How can I help?</div>
         </div>
 
         <div class="input-bar">
-            <button class="icon-btn voice-btn" id="voice-trigger" onclick="startVoice()">🎤</button>
-            <input type="text" id="msg-input" placeholder="Speak or type...">
+            <button class="icon-btn voice-btn" id="voice-btn" onclick="runVoice()">🎤</button>
+            <input type="text" id="msg-input" placeholder="Type or speak...">
             <button class="icon-btn send-btn" onclick="handleSend()">↑</button>
         </div>
     </div>
@@ -101,41 +115,49 @@
         document.getElementById(id).classList.add('active');
     }
 
-    // VOICE RECOGNITION (Works in most mobile browsers)
-    const voiceBtn = document.getElementById('voice-trigger');
-    const inputField = document.getElementById('msg-input');
-
-    function startVoice() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            alert("Voice typing is not supported on this phone.");
-            return;
-        }
-
-        const recognition = new SpeechRecognition();
-        recognition.onstart = () => voiceBtn.classList.add('recording');
-        recognition.onend = () => voiceBtn.classList.remove('recording');
-        
-        recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript;
-            inputField.value = transcript;
-            handleSend(); // Auto-send after speaking
-        };
-
-        recognition.start();
+    function startChat(msg) {
+        showView('v-chat');
+        handleSend(msg);
     }
 
-    function handleSend() {
-        const text = inputField.value.trim();
+    // VOICE RECOGNITION
+    function runVoice() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return alert("Voice typing not supported.");
+        
+        const rec = new SpeechRecognition();
+        const btn = document.getElementById('voice-btn');
+        
+        rec.onstart = () => btn.classList.add('recording');
+        rec.onend = () => btn.classList.remove('recording');
+        rec.onresult = (e) => {
+            document.getElementById('msg-input').value = e.results[0][0].transcript;
+            handleSend();
+        };
+        rec.start();
+    }
+
+    // MAIN AI SEND LOGIC
+    async function handleSend(manualMsg) {
+        const input = document.getElementById('msg-input');
+        const text = manualMsg || input.value.trim();
         if (!text) return;
 
         addMsg(text, 'user');
-        inputField.value = "";
+        input.value = "";
 
-        // Placeholder for Gemini logic
-        setTimeout(() => {
-            addMsg("I am listening. I will help you with: " + text, 'bot');
-        }, 1000);
+        try {
+            // Calling the Netlify Secret Bridge
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            const data = await response.json();
+            addMsg(data.reply || "I am thinking...", 'bot');
+        } catch (e) {
+            addMsg("I am having a little trouble connecting. Please try calling us!", 'bot');
+        }
     }
 
     function addMsg(text, type) {
