@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Village Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #F2F2F7;
+            --white: #FFFFFF;
+            --blue: #007AFF;
+            --green: #34C759;
+            --yellow: #FFCC00;
+            --gray: #8E8E93;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Montserrat', sans-serif; background: var(--bg); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        #app { width: 100%; max-width: 450px; background: var(--bg); display: flex; flex-direction: column; position: relative; }
+
+        .view { display: none; flex-direction: column; height: 100%; overflow-y: auto; }
+        .view.active { display: flex; }
+
+        /* TRAFFIC LIGHT STATUS */
+        .status-box { 
+            background: var(--white); 
+            margin: 20px; padding: 20px; 
+            border-radius: 25px; 
+            display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .light { width: 50px; height: 50px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .status-info h3 { font-size: 1.1rem; }
+        .status-info p { font-size: 0.85rem; color: var(--gray); }
+
+        /* CHAT AREA */
+        #chat-flow { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: white; }
+        .msg { max-width: 85%; padding: 14px 18px; border-radius: 22px; font-size: 1rem; line-height: 1.4; }
+        .msg.bot { background: #F2F2F7; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg.user { background: var(--blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+
+        /* INPUT BAR WITH VOICE */
+        .input-bar { padding: 15px 20px 40px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; align-items: center; }
+        #msg-input { flex: 1; padding: 12px 20px; border-radius: 30px; border: 1px solid #ddd; outline: none; background: #f9f9f9; font-size: 1rem; }
+        
+        .icon-btn { 
+            background: var(--bg); border: none; width: 45px; height: 45px; 
+            border-radius: 50%; cursor: pointer; font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .voice-btn { color: var(--blue); }
+        .voice-btn.recording { background: #FF3B30; color: white; animation: pulse 1.5s infinite; }
+        .send-btn { background: var(--blue); color: white; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="v-home" class="view active">
+        <div style="padding: 50px 20px 10px;">
+            <h1 style="font-family: 'Playfair Display'; font-size: 2.5rem;">Hello!</h1>
+        </div>
+
+        <div class="status-box">
+            <div class="light" id="main-light">✅</div>
+            <div class="status-info">
+                <h3 id="status-title">Internet is Good</h3>
+                <p id="status-desc">You can browse and watch videos.</p>
+            </div>
+        </div>
+
+        <button style="margin: 20px; padding: 25px; border-radius: 25px; border: none; background: var(--blue); color: white; font-weight: 700; font-size: 1.1rem; cursor: pointer;" onclick="showView('v-chat')">
+            💬 Talk to Help Center
+        </button>
+    </div>
+
+    <div id="v-chat" class="view">
+        <div style="padding: 50px 20px 15px; border-bottom: 1px solid #eee; background: white;">
+            <button onclick="showView('v-home')" style="background:none; border:none; color:var(--blue); font-weight:700; cursor:pointer;">‹ Back</button>
+        </div>
+
+        <div id="chat-flow">
+            <div class="msg bot">Hello! I am your helper. You can type or press the Microphone to speak to me.</div>
+        </div>
+
+        <div class="input-bar">
+            <button class="icon-btn voice-btn" id="voice-trigger" onclick="startVoice()">🎤</button>
+            <input type="text" id="msg-input" placeholder="Speak or type...">
+            <button class="icon-btn send-btn" onclick="handleSend()">↑</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showView(id) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    // VOICE RECOGNITION (Works in most mobile browsers)
+    const voiceBtn = document.getElementById('voice-trigger');
+    const inputField = document.getElementById('msg-input');
+
+    function startVoice() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert("Voice typing is not supported on this phone.");
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.onstart = () => voiceBtn.classList.add('recording');
+        recognition.onend = () => voiceBtn.classList.remove('recording');
+        
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            inputField.value = transcript;
+            handleSend(); // Auto-send after speaking
+        };
+
+        recognition.start();
+    }
+
+    function handleSend() {
+        const text = inputField.value.trim();
+        if (!text) return;
+
+        addMsg(text, 'user');
+        inputField.value = "";
+
+        // Placeholder for Gemini logic
+        setTimeout(() => {
+            addMsg("I am listening. I will help you with: " + text, 'bot');
+        }, 1000);
+    }
+
+    function addMsg(text, type) {
+        const flow = document.getElementById('chat-flow');
+        const div = document.createElement('div');
+        div.className = `msg ${type}`;
+        div.innerText = text;
+        flow.appendChild(div);
+        flow.scrollTop = flow.scrollHeight;
+    }
+</script>
+</body>
+</html>
