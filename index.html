@@ -120,24 +120,13 @@
         handleSend(msg);
     }
 
-    // VOICE RECOGNITION
-    function runVoice() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) return alert("Voice typing not supported.");
-        
-        const rec = new SpeechRecognition();
-        const btn = document.getElementById('voice-btn');
-        
-        rec.onstart = () => btn.classList.add('recording');
-        rec.onend = () => btn.classList.remove('recording');
-        rec.onresult = (e) => {
-            document.getElementById('msg-input').value = e.results[0][0].transcript;
+    // Listen for the "Enter" key
+    document.getElementById('msg-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
             handleSend();
-        };
-        rec.start();
-    }
+        }
+    });
 
-    // MAIN AI SEND LOGIC
     async function handleSend(manualMsg) {
         const input = document.getElementById('msg-input');
         const text = manualMsg || input.value.trim();
@@ -147,16 +136,20 @@
         input.value = "";
 
         try {
-            // Calling the Netlify Secret Bridge
-            const response = await fetch('/api/chat', {
+            // Updated to use the correct Netlify function path
+            const response = await fetch('/.netlify/functions/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: text })
             });
+            
+            if (!response.ok) throw new Error('Network response was not ok');
+            
             const data = await response.json();
-            addMsg(data.reply || "I am thinking...", 'bot');
+            addMsg(data.reply || "I am processing your request...", 'bot');
         } catch (e) {
-            addMsg("I am having a little trouble connecting. Please try calling us!", 'bot');
+            console.error("Fetch error:", e);
+            addMsg("I am having a little trouble connecting. Please try again or call us!", 'bot');
         }
     }
 
@@ -168,6 +161,20 @@
         flow.appendChild(div);
         flow.scrollTop = flow.scrollHeight;
     }
-</script>
-</body>
+
+    function runVoice() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return alert("Voice typing not supported.");
+        const rec = new SpeechRecognition();
+        const btn = document.getElementById('voice-btn');
+        rec.onstart = () => btn.classList.add('recording');
+        rec.onend = () => btn.classList.remove('recording');
+        rec.onresult = (e) => {
+            document.getElementById('msg-input').value = e.results[0][0].transcript;
+            handleSend();
+        };
+        rec.start();
+    }
+</script></body>
 </html>
+
